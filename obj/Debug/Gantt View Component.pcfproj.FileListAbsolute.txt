@@ -1,0 +1,3 @@
+/Users/alexandrebaker/Documents/mvp/workspace/Custom Components/Gantt View Component/obj/Debug/Gantt View Component.pcfproj.CoreCompileInputs.cache
+C:\Users\USER\Documents\Subbie Support\Impact Plumbing\ProjectTenderGantt\obj\Debug\Gantt View Component.pcfproj.AssemblyReference.cache
+C:\Users\USER\Documents\Subbie Support\Impact Plumbing\ProjectTenderGantt\obj\Debug\Gantt View Component.pcfproj.CoreCompileInputs.cache

@@ -1,0 +1,56 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\USER\\Documents\\Subbie Support\\Impact Plumbing\\ProjectTenderGantt\\Gantt View Component.pcfproj": {}
+  },
+  "projects": {
+    "C:\\Users\\USER\\Documents\\Subbie Support\\Impact Plumbing\\ProjectTenderGantt\\Gantt View Component.pcfproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\USER\\Documents\\Subbie Support\\Impact Plumbing\\ProjectTenderGantt\\Gantt View Component.pcfproj",
+        "projectName": "Gantt View Component",
+        "projectPath": "C:\\Users\\USER\\Documents\\Subbie Support\\Impact Plumbing\\ProjectTenderGantt\\Gantt View Component.pcfproj",
+        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\USER\\Documents\\Subbie Support\\Impact Plumbing\\ProjectTenderGantt\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "configFilePaths": [
+          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net462"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net462": {
+            "targetAlias": "net462",
+            "projectReferences": {}
+          }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net462": {
+          "targetAlias": "net462",
+          "dependencies": {
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.0, )"
+            },
+            "Microsoft.PowerApps.MSBuild.Pcf": {
+              "target": "Package",
+              "version": "[1.*, )"
+            }
+          }
+        }
+      }
+    }
+  }
+}

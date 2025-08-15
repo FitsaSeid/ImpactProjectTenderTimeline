@@ -1,0 +1,693 @@
+.timeline-grid .grid-seg::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--gantt-grid-line);
+}
+.timeline-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+* {
+  padding: 0;
+  margin: 0;
+}
+/* Modern Gantt Styling */
+:root {
+  --gantt-bg: #ffffff;
+  --gantt-surface: #ffffff;
+  --gantt-border: #e2e8f0;
+  --gantt-border-strong: #cfd8e3;
+  /* Modern vertical divider between detail columns and timeline */
+  --gantt-divider: #cbd5e1;
+  --gantt-header-bg: #ffffff;
+  --gantt-header-color: #2d3439;
+  --gantt-row-alt: #fafbfc;
+  --gantt-row-hover: #f1f6ff;
+  --gantt-track: #eef1f5;
+  --gantt-grid-line: #e5e9ef;
+  --gantt-today: #d83434;
+  --gantt-font: "Segoe UI", system-ui, Arial, sans-serif;
+  --gantt-radius-sm: 4px;
+  --gantt-radius-md: 6px;
+  --gantt-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --gantt-transition: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gantt-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  font-family: var(--gantt-font);
+  background: var(--gantt-bg);
+  overflow: hidden; /* prevent internal wide table from expanding outside */
+  position: relative;
+}
+
+.gantt-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  background: var(--gantt-header-bg);
+  color: var(--gantt-header-color);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: var(--gantt-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.gantt-total-banner {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #1e293b;
+  position: relative;
+  box-shadow: 0 0 0 1px #e2e8f0 inset, 0 2px 4px rgba(231, 229, 229, 0.06);
+  background: #f1f5f9; /* overwritten by inline gradient when totals exist */
+  letter-spacing: 0.5px;
+  overflow: hidden;
+}
+.gantt-total-banner .tot-lab {
+  opacity: 0.75;
+  font-weight: 700;
+}
+.gantt-total-banner .tot-val {
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
+}
+.gantt-total-banner .tot-sep {
+  width: 1px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.15);
+  display: inline-block;
+}
+.gantt-filter-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  box-shadow: 0 0 0 1px #e2e8f0 inset;
+  margin-right: auto; /* push to left */
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gantt-filter-banner .filter-icon {
+  color: #0f766e;
+  display: flex;
+}
+.gantt-filter-banner .filter-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #475569;
+}
+.gantt-filter-banner .filter-text {
+  font-weight: 600;
+  color: #0f172a;
+}
+.gantt-legend {
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+}
+.gantt-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.gantt-legend-swatch {
+  width: 18px;
+  height: 10px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.gantt-zoom-controls {
+  display: flex;
+  gap: 0.35rem;
+}
+.gantt-zoom-btn {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  text-transform: uppercase;
+}
+.gantt-zoom-btn:hover {
+  background: #e5e7eb;
+  box-shadow: 0 0 0 1px #e5e7eb;
+}
+.gantt-zoom-btn.active {
+  background: #f97316; /* orange-500 */
+  color: #ffffff;
+  border-color: #ea580c; /* orange-600 */
+  box-shadow: 0 0 0 1px rgba(234, 88, 12, 0.2),
+    0 2px 6px rgba(234, 88, 12, 0.35);
+}
+
+.gantt-zoom-btn.active:hover {
+  background: #ea580c; /* darken on hover */
+  color: #ffffff;
+}
+
+.gantt-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  /* Remove left padding so the chart starts flush with the container */
+  padding: 0.6rem 0.6rem 0.6rem 0;
+  /* Ensure it does not expand with table intrinsic width */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.gantt-view-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85rem;
+  /* Allow table to be narrower than shell; width set inline for scroll */
+  min-width: 0;
+  background: var(--gantt-surface);
+  box-shadow: var(--gantt-shadow);
+  border: 1px solid var(--gantt-border);
+  border-radius: var(--gantt-radius-md);
+  table-layout: fixed;
+}
+.gantt-view-table thead tr {
+  background: var(--gantt-surface);
+}
+.gantt-view-table thead th {
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0)
+  );
+  backdrop-filter: blur(4px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  font-weight: 600;
+  color: #2d3439;
+  border-bottom: 1px solid var(--gantt-border-strong);
+  padding: 6px 10px;
+}
+/* Compact timeline header cells (week/day) */
+.gantt-view-table thead th.timeline-seg {
+  padding: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  box-sizing: border-box;
+  /* Ensure these sit beneath the sticky detail header cells */
+  z-index: 4;
+}
+.gantt-view-table td.timeline-cell {
+  padding: 0;
+  box-sizing: border-box;
+}
+.gantt-view-table thead th.timeline-seg {
+  position: relative;
+}
+.gantt-view-table thead th.timeline-seg::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--gantt-grid-line);
+}
+.gantt-view-table thead th:first-child {
+  text-align: left;
+}
+/* Left-align Start and End header cells */
+.gantt-view-table thead th.sticky-start,
+.gantt-view-table thead th.sticky-end,
+.gantt-view-table thead th.sticky-name {
+  text-align: left;
+  background: var(--gantt-surface);
+}
+.gantt-view-table thead th .sortable-header {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gantt-view-table thead th .header-label {
+  font-weight: 600;
+}
+.gantt-view-table thead th .sort-icon svg {
+  display: block;
+}
+.gantt-view-table thead th .sort-icon.inactive {
+  opacity: 0.3;
+}
+.gantt-view-table thead th .sort-icon.asc,
+.gantt-view-table thead th .sort-icon.desc {
+  color: #ff7a00;
+}
+.gantt-view-table thead th:hover .sort-icon.inactive {
+  opacity: 0.55;
+}
+/* Fixed widths and no seams between sticky columns */
+.gantt-view-table thead th.sticky-name,
+.gantt-view-table tbody td.sticky-name,
+.gantt-view-table tfoot td.sticky-name {
+  /* dynamic width now controlled inline for resizing */
+  min-width: 150px !important;
+  max-width: 700px !important; /* updated maximum */
+  background: var(--gantt-surface);
+}
+.gantt-view-table thead th.sticky-start,
+.gantt-view-table tbody td.sticky-start,
+.gantt-view-table tfoot td.sticky-start {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  background: var(--gantt-surface);
+}
+.gantt-view-table thead th.sticky-end,
+.gantt-view-table tbody td.sticky-end,
+.gantt-view-table tfoot td.sticky-end {
+  width: 100px !important;
+  min-width: 100px !important;
+  max-width: 100px !important;
+  background: var(--gantt-surface);
+  /* Add modern divider on the right edge to separate details from timeline */
+  border-right: 0 !important; /* reset for custom pseudo divider */
+  position: sticky;
+  z-index: 11; /* slightly above timeline cells so divider stays visible */
+}
+.gantt-view-table .sticky-col {
+  margin: 0;
+  border-right: none !important;
+  box-shadow: none !important;
+}
+/* Cover any sub-pixel seam between sticky columns and the timeline */
+.gantt-view-table thead th.sticky-name::after,
+.gantt-view-table thead th.sticky-start::after,
+.gantt-view-table thead th.sticky-end::after,
+.gantt-view-table tbody td.sticky-name::after,
+.gantt-view-table tbody td.sticky-start::after,
+.gantt-view-table tbody td.sticky-end::after,
+.gantt-view-table tfoot td.sticky-name::after,
+.gantt-view-table tfoot td.sticky-start::after,
+.gantt-view-table tfoot td.sticky-end::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 1px;
+  bottom: 0;
+  background: var(--gantt-surface);
+  pointer-events: none;
+}
+/* Override the seam cover for the last sticky column to show a modern divider */
+.gantt-view-table thead th.sticky-end::after,
+.gantt-view-table tbody td.sticky-end::after,
+.gantt-view-table tfoot td.sticky-end::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    var(--gantt-divider) 12%,
+    var(--gantt-divider) 88%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  width: 2px;
+  right: -2px; /* extend slightly into timeline */
+  box-shadow: 1px 0 0 0 #ffffff inset, 0 0 0 1px rgba(0, 0, 0, 0.02);
+  opacity: 0.9;
+}
+
+/* Optional subtle glow on hover to emphasize separation */
+.gantt-table-wrapper:hover .gantt-view-table thead th.sticky-end::after,
+.gantt-table-wrapper:hover .gantt-view-table tbody td.sticky-end::after,
+.gantt-table-wrapper:hover .gantt-view-table tfoot td.sticky-end::after {
+  opacity: 1;
+}
+/* Sticky columns background in body rows (non-transparent) */
+.gantt-view-table tbody td.sticky-col {
+  background: var(--gantt-surface);
+}
+.gantt-view-table tbody tr:nth-of-type(even) td.sticky-col {
+  background: var(--gantt-row-alt);
+}
+.gantt-view-table tbody tr:hover td.sticky-col {
+  background: var(--gantt-row-hover);
+}
+/* Warning style for blank date cells */
+.gantt-view-table td.warn-blank {
+  background: #ffeaea !important; /* light red */
+  color: #7a2626;
+}
+/* Keep header gradient from thead th rule; no override here */
+/* Do not draw a vertical seam between sticky columns and the timeline */
+.gantt-view-table .sticky-col {
+  box-shadow: none;
+}
+.gantt-view-table th,
+.gantt-view-table td {
+  padding: 6px 10px;
+}
+.gantt-view-table tbody tr {
+  border-bottom: 1px solid var(--gantt-border);
+  transition: background var(--gantt-transition);
+}
+.gantt-view-table tbody td {
+  border-right: 1px solid var(--gantt-border);
+  white-space: nowrap;
+  text-align: left;
+}
+/* Make Name/Start/End a single continuous block without inner separators */
+.gantt-view-table thead th.sticky-col,
+.gantt-view-table tbody td.sticky-col {
+  border-right: none;
+}
+/* Ensure the first timeline cell sits flush against sticky columns */
+.gantt-view-table td.timeline-cell {
+  border-left: none;
+}
+.gantt-view-table td.timeline-cell {
+  position: relative;
+}
+/* Allow wrapping only in the Name sticky column */
+.gantt-view-table td.sticky-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+}
+
+/* Column resize handle */
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  cursor: col-resize;
+  user-select: none;
+  height: 100%;
+  background: transparent;
+}
+.col-resize-handle:hover,
+.col-resize-handle:focus {
+  background: rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+.col-resize-handle:active {
+  background: rgba(0, 0, 0, 0.18);
+}
+.col-resize-grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 40%;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 1px;
+  box-shadow: -3px 0 0 0 rgba(0, 0, 0, 0.25), 3px 0 0 0 rgba(0, 0, 0, 0.25);
+}
+.gantt-view-table.is-week td.sticky-name {
+  padding-right: 6px;
+  /* Use default table font size for consistency across views */
+  font-size: inherit;
+}
+.gantt-view-table tbody tr:nth-of-type(even) {
+  background: var(--gantt-row-alt);
+}
+.gantt-view-table tbody tr:hover {
+  background: var(--gantt-row-hover);
+}
+.gantt-view-table tbody tr:last-of-type {
+  border-bottom: none;
+}
+.gantt-view-table tbody tr.active-row {
+  font-weight: 600;
+  color: #ff7a00;
+}
+
+/* Totals footer */
+.gantt-view-table tfoot .gantt-totals-row td {
+  border-top: 1px solid var(--gantt-border-strong);
+}
+.gantt-view-table tfoot .gantt-totals-row .gantt-total-seg {
+  vertical-align: top;
+}
+.gantt-view-table tfoot .gantt-totals-row .tot-spark {
+  display: flex;
+  height: 3px; /* reduced height */
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 4px;
+}
+.gantt-view-table tfoot .gantt-totals-row .tot-spark-part {
+  height: 100%;
+  opacity: 0.8;
+}
+.gantt-view-table tfoot .gantt-totals-row .tot-chips {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.gantt-view-table tfoot .gantt-totals-row .tot-chip {
+  display: inline-block;
+  padding: 2px 4px;
+  background: #fff;
+  border: 1px solid var(--gantt-border);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #334155;
+}
+/* Merged total pill */
+.tot-merged-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #1e293b;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px #e2e8f0 inset;
+  white-space: nowrap;
+}
+.tot-merged-pill.overall {
+  background: #e2e8f0;
+}
+.tot-merged-pill .pill-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #475569;
+}
+.tot-merged-pill .pill-val {
+  color: #0f172a;
+  font-weight: 700;
+}
+.tot-merged-pill .pill-sep {
+  width: 1px;
+  height: 14px;
+  background: #cbd5e1;
+  display: inline-block;
+  margin: 0 2px;
+}
+
+/* Bars */
+.gantt-view-table .progress-track,
+.gantt-view-table .progress-bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px; /* fixed bar height so tall rows center nicely */
+}
+.gantt-view-table .progress-track {
+  background: var(--gantt-track);
+  border-radius: var(--gantt-radius-sm);
+}
+.gantt-view-table .progress-bar {
+  background: transparent;
+  border-radius: var(--gantt-radius-sm);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.18);
+  transition: width var(--gantt-transition), left var(--gantt-transition),
+    background-color var(--gantt-transition), opacity var(--gantt-transition);
+}
+.gantt-view-table .progress-bar[data-color="project"] {
+  filter: saturate(1.05);
+}
+.gantt-view-table .progress-bar[data-color="tender"] {
+  filter: saturate(1.05);
+}
+.gantt-view-table .progress-bar:hover {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.24);
+}
+
+/* Milestones */
+.gantt-view-table .milestone_ends {
+  top: 50%;
+  transform: translate(-40%, -50%) rotate(45deg);
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  background: linear-gradient(145deg, #444, #111);
+  border: 1px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+  z-index: 4;
+}
+.gantt-view-table .milestone_bar {
+  top: 50%;
+  transform: translateY(-50%);
+  height: 6px;
+  position: absolute;
+  background: linear-gradient(90deg, #111, #555);
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+}
+.test {
+  margin: 0;
+}
+
+/* Today Line */
+.gantt-view-table .currentdate {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--gantt-today);
+  box-shadow: 0 0 0 2px rgba(216, 52, 52, 0.15);
+  z-index: 5;
+}
+.gantt-view-table .currentdate::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: transparent;
+}
+
+/* Containers with bars */
+.gantt-view-table td:has(.gantt-inline-bar),
+.gantt-view-table td:has(.milestone_ends),
+.gantt-view-table td:has(.currentdate) {
+  position: relative;
+  padding: 0;
+  border-right: none; /* ensure header/body widths align */
+}
+
+/* Column resizing disabled; handles removed */
+
+/* Tooltips */
+.gantt-view-table .progress-bar[title] {
+  position: relative;
+}
+.gantt-view-table .progress-bar[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background: #222;
+  color: #fff;
+  font-size: 0.72rem;
+  padding: 4px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Scrollbar */
+.gantt-table-wrapper::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.gantt-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.gantt-table-wrapper::-webkit-scrollbar-thumb {
+  background: #c2c9d4;
+  border-radius: 20px;
+  border: 2px solid #f4f6f9;
+}
+.gantt-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #aab4c2;
+}
+
+/* Inline editing bar */
+.gantt-inline-bar {
+  position: absolute;
+  top: 22%;
+  height: 56%;
+  border-radius: var(--gantt-radius-sm);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.18);
+  cursor: default;
+  display: flex;
+  align-items: stretch;
+  z-index: 3;
+}
+.gantt-inline-bar.editing {
+  outline: 2px solid #222;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25);
+}
+.gantt-inline-bar .bar-end-handle {
+  flex: 0 0 8px;
+  cursor: ew-resize;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0)
+  );
+  border-left: 1px solid rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+.gantt-inline-bar .bar-end-handle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 60%;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 1px;
+}
+.gantt-inline-bar:hover .bar-end-handle {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.2)
+  );
+}
